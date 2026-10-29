@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PoriKolpona</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="welcome" class="welcome" hidden>
+  <form id="wform" class="card wcard" novalidate>
+    <div class="wbrand"><span class="em" id="wico">✨</span> PoriKolpona</div>
+    <h1>Your studies. Your goals. Your progress.</h1>
+    <p class="muted">A personal space to manage your subjects, chapters, lectures and deadlines. Everything stays in this browser.</p>
+    <label>Your name<input id="wname" maxlength="40" autocomplete="given-name" required></label>
+    <label>Academic year<select id="wyear"><option>HSC 2027</option><option>HSC 2028</option></select></label>
+    <label>Your college<input id="wcollege" maxlength="80" required></label>
+    <p class="err" id="werr" role="alert"></p>
+    <button class="btn primary big">Enter My Workspace</button>
+    <button type="button" class="link" data-a="im">Restore from a backup file</button>
+  </form>
+</div>
+<div id="app" class="app" hidden>
+  <nav id="nav" class="nav" aria-label="Main"></nav>
+  <div class="main">
+    <header class="top">
+      <h2 id="title"></h2>
+      <button id="chip" class="chip" data-a="nav" data-v="deadlines" hidden></button>
+      <div class="acts">
+        <button class="btn" data-a="fo">🍅 Focus</button>
+        <button class="btn primary" data-a="add">+ Add Chapter</button>
+        <button id="theme" class="btn icon" data-a="tt" aria-label="Toggle light or dark theme"></button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+<dialog id="dlg" aria-label="Chapter form"></dialog>
+<input type="file" id="file" accept="application/json,.json" hidden>
+<div id="focus" class="focus" hidden role="dialog" aria-modal="true" aria-label="Focus timer"></div>
+<input type="file" id="photo" accept="image/*" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>
