@@ -1,9 +1,9 @@
 'use strict';
 const KEY='hsc-tracker-v1',SUBJ=['Physics','Chemistry','Biology','Higher Mathematics','ICT','Bangla','English'],PAPERS=['1st Paper','2nd Paper'],
-TASKS=['YouTube lecture watched','Lecture sheet completed','Notes completed','Practice completed'],
+TASKS=['YouTube lecture watched','Book reading completed','Notes completed','Practice completed'],
 NAV=[['dashboard','Dashboard','⌂'],['subjects','My Subjects','▦'],['chapters','Chapters','☰'],['deadlines','Deadlines','⏱'],['search','Search','⌕'],['user','User','☺'],['settings','Settings','⚙']],
 DAY=864e5,$=s=>document.querySelector(s),dlg=$('#dlg');
-const POOL={brand:['✨','🪄','🌈','🦋','🌟','🔮'],dashboard:['🏠','🚀','🌈','🎯','🧭'],subjects:['📚','🗂️','🧩','🎒','🔖'],chapters:['📖','🗒️','📝','🧠','🔖'],deadlines:['⏳','⏰','📅','🔥','🎯'],search:['🔎','🧐','🔭','🗺️','🕵️'],user:['😎','🦊','🐼','🦉','🐯'],settings:['⚙️','🛠️','🎛️','🧰','🔧'],focus:['🍅','🎧','🧘','🔥','🌿'],
+const POOL={brand:['✨','🪄','🧠','🦋','🌟','🔮'],dashboard:['🏠','🚀','🧠','🎯','🧭'],subjects:['📚','🗂️','🧩','🎒','🔖'],chapters:['📖','🗒️','📝','🧠','🔖'],deadlines:['⏳','⏰','📅','🔥','🎯'],search:['🔎','🧐','🔭','🗺️','🕵️'],user:['😎','🦊','🐼','🦉','🐯'],settings:['⚙️','🛠️','🎛️','🧰','🔧'],focus:['🍅','🎧','🧘','🔥','🌿'],
 Physics:['⚛️','🔭','🧲','💡','🚀','🌌'],Chemistry:['🧪','⚗️','🔬','🧫','💥','🌡️'],Biology:['🧬','🌿','🦠','🐸','🌱','🦴'],'Higher Mathematics':['➗','📐','📊','♾️','🧮','🔢'],ICT:['💻','🖥️','⌨️','🌐','🤖','📡'],Bangla:['📖','🪷','🖋️','🌾','🎭','📜'],English:['🔤','📚','✍️','🗣️','🎓','📝']};
 const IC=Object.fromEntries(Object.entries(POOL).map(([k,v])=>[k,v[Math.random()*v.length|0]]));
 const ttl=c=>(c.num?`Ch ${c.num}. `:'')+c.name,SI=c=>`<span class="em">${IC[c.subject]}</span> `;
