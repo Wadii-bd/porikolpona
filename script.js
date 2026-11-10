@@ -1,13 +1,13 @@
 'use strict';
-const KEY='hsc-tracker-v1',SUBJ=['Physics','Chemistry','Biology','Higher Mathematics','ICT','Bangla','English'],PAPERS=['1st Paper','2nd Paper'],
-TASKS=['YouTube lecture watched','Book reading completed','Notes completed','Practice completed'],
-NAV=[['dashboard','Dashboard','⌂'],['subjects','My Subjects','▦'],['chapters','Chapters','☰'],['deadlines','Deadlines','⏱'],['search','Search','⌕'],['user','User','☺'],['settings','Settings','⚙']],
+const KEY='hsc-tracker-v1',PROMO_KEY='porikolpona-promo-enabled',PROMO_SESSION='porikolpona-promo-dismissed',PROMO_URL='https://wadii-bd.github.io/sheshkori/',SUBJ=['Physics','Chemistry','Biology','Higher Mathematics','ICT','Bangla','English'],PAPERS=['1st Paper','2nd Paper'],
+TASKS=['YouTube lecture watched','Lecture sheet completed','Notes completed','Practice completed'],
+NAV=[['dashboard','Dashboard','⌂'],['subjects','My Subjects','▦'],['chapters','Chapters','☰'],['deadlines','Deadlines','⏱'],['done','Done Chapters','✓'],['search','Search','⌕'],['user','User','☺'],['settings','Settings','⚙']],
 DAY=864e5,$=s=>document.querySelector(s),dlg=$('#dlg');
-const POOL={brand:['✨','🪄','🧠','🦋','🌟','🔮'],dashboard:['🏠','🚀','🧠','🎯','🧭'],subjects:['📚','🗂️','🧩','🎒','🔖'],chapters:['📖','🗒️','📝','🧠','🔖'],deadlines:['⏳','⏰','📅','🔥','🎯'],search:['🔎','🧐','🔭','🗺️','🕵️'],user:['😎','🦊','🐼','🦉','🐯'],settings:['⚙️','🛠️','🎛️','🧰','🔧'],focus:['🍅','🎧','🧘','🔥','🌿'],
+const POOL={brand:['✨','🪄','🌈','🦋','🌟','🔮'],dashboard:['🏠','🚀','🌈','🎯','🧭'],subjects:['📚','🗂️','🧩','🎒','🔖'],chapters:['📖','🗒️','📝','🧠','🔖'],deadlines:['⏳','⏰','📅','🔥','🎯'],done:['✅','🏁','🎉'],search:['🔎','🧐','🔭','🗺️','🕵️'],user:['😎','🦊','🐼','🦉','🐯'],settings:['⚙️','🛠️','🎛️','🧰','🔧'],focus:['🍅','🎧','🧘','🔥','🌿'],
 Physics:['⚛️','🔭','🧲','💡','🚀','🌌'],Chemistry:['🧪','⚗️','🔬','🧫','💥','🌡️'],Biology:['🧬','🌿','🦠','🐸','🌱','🦴'],'Higher Mathematics':['➗','📐','📊','♾️','🧮','🔢'],ICT:['💻','🖥️','⌨️','🌐','🤖','📡'],Bangla:['📖','🪷','🖋️','🌾','🎭','📜'],English:['🔤','📚','✍️','🗣️','🎓','📝']};
 const IC=Object.fromEntries(Object.entries(POOL).map(([k,v])=>[k,v[Math.random()*v.length|0]]));
 const ttl=c=>(c.num?`Ch ${c.num}. `:'')+c.name,SI=c=>`<span class="em">${IC[c.subject]}</span> `;
-let S={profile:null,theme:null,focusMin:0,chapters:[]},UI={v:'dashboard',q:'',sub:'',paper:'',st:'',sort:'recent',open:{}},noSave=false,loadErr='',tt,qt;
+let S={profile:null,theme:null,focusMin:0,chapters:[]},UI={v:'dashboard',q:'',sub:'',paper:'',st:'',sort:'deadline',open:{}},noSave=false,loadErr='',tt,qt;
 
 /* helpers */
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -66,7 +66,7 @@ function save(){if(noSave)return;try{localStorage.setItem(KEY,JSON.stringify(S))
 const curTheme=()=>S.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
 const applyTheme=()=>{document.documentElement.dataset.theme=curTheme()};
 const find=(cid,lid)=>{const c=S.chapters.find(x=>x.id===cid);return[c,c&&c.lectures.find(x=>x.id===lid)]};
-function touch(c,l){const t=now();if(l)l.updated=t;c.updated=t;save();const e=document.getElementById('ch-'+c.id);if(!e)return render();const k=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.k;e.outerHTML=chCard(c);hdr();if(k){const f=document.querySelector(`[data-k="${CSS.escape(k)}"]`);if(f)f.focus()}}
+function touch(c,l){const t=now();if(l)l.updated=t;c.updated=t;save();if((UI.v==='chapters'&&isDone(c))||(UI.v==='done'&&!isDone(c)))return render();const e=document.getElementById('ch-'+c.id);if(!e)return render();const k=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.k;e.outerHTML=chCard(c);hdr();if(k){const f=document.querySelector(`[data-k="${CSS.escape(k)}"]`);if(f)f.focus()}}
 
 /* confirm dialog */
 function ask(msg,ok='Confirm',word){
@@ -82,8 +82,8 @@ function ask(msg,ok='Confirm',word){
 /* templates */
 const row=c=>`<button class="row" data-a="go" data-id="${esc(c.id)}"><span class="ti"><b>${SI(c)}${esc(ttl(c))}</b><small>${esc(meta(c))}, ${pct(dn(c),tot(c))}%</small></span>${pill(cd(c))}</button>`;
 function lecCard(c,l){
-  const n=l.t.filter(Boolean).length,fl=n===4,o=UI.open[l.id],da=`data-c="${esc(c.id)}" data-l="${esc(l.id)}"`;
-  return`<div class="lec col${fl?' full':''}${o?' open':''}" data-id="${esc(l.id)}">
+  const n=l.t.filter(Boolean).length,fl=n===4,partial=n>0&&!fl,o=UI.open[l.id],da=`data-c="${esc(c.id)}" data-l="${esc(l.id)}"`;
+  return`<div class="lec col${fl?' full':partial?' partial':''}${o?' open':''}" data-id="${esc(l.id)}">
 <div class="lh"><input type="checkbox" class="mc" data-k="m${esc(l.id)}" ${da} title="Mark all 4 tasks" aria-label="Mark all four tasks of lecture ${l.n} complete"${fl?' checked':''}><button class="tgl" data-a="tg" aria-expanded="${!!o}"><span class="chev" aria-hidden="true">›</span><b>Lecture ${String(l.n).padStart(2,'0')}</b><span class="mini">${n}/4</span>${fl?'<span class="ck" title="Lecture complete" aria-label="Lecture complete">✓</span>':''}</button><div class="mbar">${bar(n*25)}</div></div>
 <div class="bd"><div class="in">
 ${TASKS.map((t,i)=>`<label class="tk"><input type="checkbox" class="t" data-k="${esc(l.id)}-${i}" ${da} data-i="${i}"${l.t[i]?' checked':''}><span>${t}</span></label>`).join('')}
@@ -136,6 +136,7 @@ function filt(){
   return S.chapters.filter(c=>{
     if(UI.sub&&c.subject!==UI.sub||UI.paper&&c.paper!==UI.paper)return false;
     const d=isDone(c);
+    if(UI.v==='chapters'&&UI.st!=='done'&&d)return false;
     if(UI.st==='done'&&!d||UI.st==='todo'&&d||UI.st==='dl'&&!c.due||UI.st==='over'&&cd(c).k!=='overdue')return false;
     return!q||[c.name,c.desc,c.notes,...c.lectures.flatMap(l=>[l.note,l.yt,l.sheet])].join('\n').toLowerCase().includes(q)})
   .sort((a,b)=>UI.sort==='alpha'?a.name.localeCompare(b.name):UI.sort==='deadline'?cmp(k(a),k(b))||a.name.localeCompare(b.name):cmp(b.updated,a.updated))}
@@ -145,6 +146,7 @@ function res(){
 function settings(){
   const p=S.profile,A=agg(S.chapters);let sz=0;try{sz=(localStorage.getItem(KEY)||'').length}catch{}
   return`<div class="stack"><form class="card mf" id="pf" novalidate><h3>Profile</h3><label>Your name<input name="name" maxlength="40" value="${esc(p.name)}" required></label><label>Academic year<select name="year">${opts(['HSC 2027','HSC 2028'],p.year)}</select></label><label>Your college<input name="college" maxlength="80" value="${esc(p.college)}" required></label><div class="mact"><button class="btn primary">Save profile</button></div></form>
+<section class="card mf"><h3>Study progress invitation</h3><label class="promo-setting"><input id="promoEnabled" type="checkbox" ${promoEnabled()?'checked':''}> Show the HSC study progress invitation when the website opens</label><p class="muted">Turn this off to stop the invitation from appearing on future visits.</p></section>
 <section class="card mf"><h3>Appearance</h3><div class="mact l"><button class="btn${curTheme()==='light'?' primary':''}" data-a="th" data-t="light">Light</button><button class="btn${curTheme()==='dark'?' primary':''}" data-a="th" data-t="dark">Dark</button></div></section>
 <section class="card mf"><h3>Your data</h3><p class="muted">Stored only in this browser: ${(sz/1024).toFixed(1)} KB, ${S.chapters.length} chapters, ${A.l} lectures. It does not sync between devices or browsers, so export a backup to move or protect it.</p><div class="mact l"><button class="btn" data-a="ex">Export backup</button><button class="btn" data-a="im">Restore backup</button><button class="btn danger" data-a="rst">Reset all data</button></div></section></div>`}
 function user(){
@@ -152,7 +154,11 @@ function user(){
   const B=[[150,'Champion','🏆'],[75,'Scholar','🎓'],[30,'Achiever','🏅'],[10,'Explorer','🧭'],[0,'Starter','🌱']].find(b=>A.f>=b[0]);
   const st=[['Overall progress',pct(A.d,A.t)+'%'],['Chapters',S.chapters.length],['Lectures completed',`${A.f}/${A.l}`],['Tasks done',`${A.d}/${A.t}`],['Active deadlines',up.length],['Next deadline',nx?`${cd(nx).big} ${cd(nx).sub}`:'None'],['Focus time',`${S.focusMin||0} min`],['Days with PoriKolpona',days]];
   return`<div class="stack"><div class="card uhero"><div class="av">${P.photo?`<img src="${P.photo}" alt="Your photo">`:IC.user}</div><div><h1>${esc(P.name)}</h1><p class="muted">${esc(P.year)}, ${esc(P.college)}</p><p class="badge">${B[2]} ${B[1]} badge</p><div class="mact l" style="margin-top:8px"><button class="btn sm" data-a="up">Upload photo</button>${P.photo?'<button class="btn sm" data-a="rp">Remove photo</button>':''}</div></div></div><div class="stats">${st.map(([l,v])=>`<div class="stat card"><b>${v}</b><span>${l}</span></div>`).join('')}</div></div>`}
-const VIEWS={dashboard,subjects,chapters:()=>listView(0),deadlines,search:()=>listView(1),user,settings};
+function done(){
+  const L=S.chapters.filter(isDone).sort((a,b)=>cmp(b.updated,a.updated));
+  return `<div class="stack"><p class="muted">Chapters move here automatically when every lecture and all four tasks in each lecture are complete.</p>${L.length?L.map(chCard).join(''):'<div class="card empty"><p>No completed chapters yet. Finish every lecture in a chapter and it will appear here.</p></div>'}</div>`
+}
+const VIEWS={dashboard,subjects,chapters:()=>listView(0),deadlines,done,search:()=>listView(1),user,settings};
 
 function render(){
   const k=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.k;
@@ -163,6 +169,17 @@ function render(){
   $('#view').innerHTML=VIEWS[UI.v]();
   hdr();if(UI.v==='chapters'||UI.v==='search')res();
   if(k){const e=document.querySelector(`[data-k="${CSS.escape(k)}"]`);if(e)e.focus()}}
+function promoEnabled(){try{return localStorage.getItem(PROMO_KEY)!=='off'}catch{return true}}
+function hidePromo(){const p=$('#promo');if(p)p.remove();try{sessionStorage.setItem(PROMO_SESSION,'1')}catch{}}
+function showPromo(){
+  if(!S.profile||!promoEnabled())return;
+  try{if(sessionStorage.getItem(PROMO_SESSION)==='1')return}catch{}
+  if($('#promo'))return;
+  const p=document.createElement('div');
+  p.id='promo';p.className='promo-backdrop';
+  p.innerHTML=`<section class="promo-card" role="dialog" aria-modal="true" aria-labelledby="promo-title"><button class="promo-close" type="button" aria-label="Close invitation" data-a="promoClose">×</button><div class="em big">📚</div><h2 id="promo-title">Do you want to track your HSC study progress?</h2><p class="muted">Stay focused, organize your preparation and keep moving towards your HSC goals.</p><a class="btn primary promo-cta" href="${PROMO_URL}" target="_blank" rel="noopener noreferrer">Track my HSC progress</a></section>`;
+  document.body.append(p);
+}
 function go(v){UI.v=v;render();scrollTo(0,0);if(v==='search')$('#q').focus()}
 const reset=o=>Object.assign(UI,{q:'',sub:'',paper:'',st:''},o);
 
@@ -222,6 +239,7 @@ document.addEventListener('click',async e=>{
   const a=b.dataset.a,id=b.dataset.id,c=id&&S.chapters.find(x=>x.id===id),l=c&&c.lectures.find(x=>x.id===b.dataset.l);
   switch(a){
     case'nav':go(b.dataset.v);break;
+    case'promoClose':hidePromo();break;
     case'tg':{const el=b.closest('.col'),o=el.classList.toggle('open');UI.open[el.dataset.id]=o;b.setAttribute('aria-expanded',o);const z=el.querySelector(':scope>.bd>.in>.lecs');if(o&&z&&!z.firstChild)z.innerHTML=lecs(S.chapters.find(x=>x.id===el.dataset.id));break}
     case'add':chModal(null,b.dataset.s);break;
     case'ed':chModal(id);break;
@@ -256,7 +274,8 @@ document.addEventListener('input',e=>{
   else if(t.name==='days'||t.name==='date')t.form.dm.value=t.name});
 document.addEventListener('change',e=>{
   const t=e.target,M={fs:'sub',fp:'paper',ft:'st',fo:'sort'};
-  if(M[t.id]){UI[M[t.id]]=t.value;res()}
+  if(t.id==='promoEnabled'){try{localStorage.setItem(PROMO_KEY,t.checked?'on':'off')}catch{};if(!t.checked){const p=$('#promo');if(p)p.remove()}}
+  else if(M[t.id]){UI[M[t.id]]=t.value;res()}
   else if(t.name==='subject'&&t.form&&t.form.id==='cform')$('#plab').hidden=t.value==='ICT';
   else if(t.classList.contains('mc')){const[c,l]=find(t.dataset.c,t.dataset.l);if(l){l.t=[0,1,2,3].map(()=>t.checked);touch(c,l)}}
   else if(t.classList.contains('t')){const[c,l]=find(t.dataset.c,t.dataset.l);if(l){l.t[+t.dataset.i]=t.checked;touch(c,l)}}
@@ -269,7 +288,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target;
   if(f.id==='cform')await saveCh(f);
-  else if(f.id==='pf'){const v=Object.fromEntries(new FormData(f));if(!v.name.trim()||!v.college.trim())return toast('Name and college are required.');S.profile={...S.profile,name:v.name.trim(),year:v.year,college:v.college.trim()};save();render();toast('Profile saved')}
+  else if(f.id==='pf'){const v=Object.fromEntries(new FormData(f));if(!v.name.trim()||!v.college.trim())return toast('Name and college are required.');S.profile={...S.profile,name:v.name.trim(),year:v.year,college:v.college.trim()};save();render();toast('Profile saved');showPromo()}
   else if(f.id==='wform'){
     const n=$('#wname').value.trim(),c=$('#wcollege').value.trim();
     if(!n||!c){$('#werr').textContent='Please enter your name and your college.';return}
@@ -302,4 +321,4 @@ $('#photo').onchange=e=>{
   const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const s=256,cv=document.createElement('canvas'),m=Math.min(i.width,i.height);cv.width=cv.height=s;cv.getContext('2d').drawImage(i,(i.width-m)/2,(i.height-m)/2,m,m,0,0,s,s);S.profile.photo=cv.toDataURL('image/jpeg',.82);save();render();toast('Photo updated')};i.onerror=()=>toast('That image could not be read.');i.src=r.result};r.readAsDataURL(f)};
 load();applyTheme();
 if(loadErr){$('#werr').textContent=loadErr;toast(loadErr)}
-$('#wico').textContent=IC.brand;render();fx();
+$('#wico').textContent=IC.brand;render();fx();showPromo();
