@@ -1,6 +1,6 @@
 'use strict';
 const KEY='hsc-tracker-v1',PROMO_KEY='porikolpona-promo-enabled',PROMO_SESSION='porikolpona-promo-dismissed',PROMO_URL='https://wadii-bd.github.io/sheshkori/',SUBJ=['Physics','Chemistry','Biology','Higher Mathematics','ICT','Bangla','English'],PAPERS=['1st Paper','2nd Paper'],
-TASKS=['YouTube lecture watched','Lecture sheet completed','Notes completed','Practice completed'],
+TASKS=['YouTube lecture watched','Book Reading completed','Notes completed','Practice completed'],
 NAV=[['dashboard','Dashboard','⌂'],['subjects','My Subjects','▦'],['chapters','Chapters','☰'],['deadlines','Deadlines','⏱'],['done','Done Chapters','✓'],['search','Search','⌕'],['user','User','☺'],['settings','Settings','⚙']],
 DAY=864e5,$=s=>document.querySelector(s),dlg=$('#dlg');
 const POOL={brand:['✨','🪄','🌈','🦋','🌟','🔮'],dashboard:['🏠','🚀','🌈','🎯','🧭'],subjects:['📚','🗂️','🧩','🎒','🔖'],chapters:['📖','🗒️','📝','🧠','🔖'],deadlines:['⏳','⏰','📅','🔥','🎯'],done:['✅','🏁','🎉'],search:['🔎','🧐','🔭','🗺️','🕵️'],user:['😎','🦊','🐼','🦉','🐯'],settings:['⚙️','🛠️','🎛️','🧰','🔧'],focus:['🍅','🎧','🧘','🔥','🌿'],
